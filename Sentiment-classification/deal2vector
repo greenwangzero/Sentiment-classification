@@ -1,0 +1,95 @@
+import gensim
+
+import numpy as np
+
+vector_model_path = 'news_12g_baidubaike_20g_novel_90g_embedding_64.bin'
+
+vector_model = gensim.models.KeyedVectors.load_word2vec_format(vector_model_path, binary=True, limit=100000)
+
+
+def word2vector():
+   # f = open('word2vector.txt', 'w+')
+
+   # with open("sentiment_XS_30k.txt", encoding="utf-8") as fil:
+
+    f = open('wector.txt', 'w+')
+
+    with open("sentiment_XS_test.txt", encoding="utf-8") as fil:
+
+        for i in range(11562):
+
+            textlint = fil.readline()
+
+            # 保存label
+
+            predict = []
+
+            label = textlint.split(",", 1)[0]
+
+            if label == "positive":
+
+                predict.append(1)
+
+            elif label == "negative":
+
+                predict.append(0)
+
+            else:
+
+                print("error!")
+
+            # 生成词向量
+
+            voclist = textlint.split(",", 1)[1].split(" ")
+
+            x = [v.strip() for v in voclist]  # 句子分词的list
+
+            vectors = []  # 词向量list
+
+            for word in x:
+
+                try:
+
+                    vectors.append(vector_model[word])
+
+                except Exception as e:
+
+                    # 词向量表中未出现的词，其向量用零向量代替
+
+                    vectors.append(np.zeros(64))
+
+            if len(vectors) < 10:
+                # 句子的词少于10个
+
+                vectors.append(np.zeros(64 * (10 - len(vectors))))
+
+                vector = numextract(vectors)
+
+                training_data = predict + vector
+
+                f.write(str(training_data) + '\n')
+
+            if len(vectors) > 10:
+                # 句子的词少于10个
+
+                vector = numextract(vectors)[0: 640]
+
+                training_data = predict + vector
+
+                f.write(str(training_data) + '\n')
+
+
+def numextract(lists):
+    vector = []
+
+    for i in range(len(lists)):
+
+        for t in range(len(lists[i])):
+            vector.append(lists[i].item(t))
+
+    return vector
+
+
+if __name__ == "__main__":
+    word2vector()
+    print("ok")
